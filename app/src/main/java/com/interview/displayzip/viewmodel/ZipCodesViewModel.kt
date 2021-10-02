@@ -10,6 +10,7 @@ import com.interview.displayzip.repo.ZipCodeRepo
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
+import java.io.IOException
 
 class ZipCodesViewModel : ViewModel() {
     private val zipCodeRepo: ZipCodeRepo = ZipCodeRepo.newInstance()
@@ -20,28 +21,27 @@ class ZipCodesViewModel : ViewModel() {
         viewModelScope.launch {
             mZipCodeList.value = Resource.Loading()
             withContext(Dispatchers.IO) {
-                val result = zipCodeRepo.getZipCode(city, state)
-                if (result.isSuccessful && result.body() != null) {
-                    withContext(Dispatchers.Main) {
-                        mZipCodeList.value =
-                            Resource.Success(result.body() ?: ZipCodeDTO(ArrayList()))
+                try {
+                    val result = zipCodeRepo.getZipCode(city, state)
+                    if (result.isSuccessful && result.body() != null) {
+                        withContext(Dispatchers.Main) {
+                            mZipCodeList.value =
+                                Resource.Success(result.body() ?: ZipCodeDTO(ArrayList()))
+                        }
+                    } else {
+                        withContext(Dispatchers.Main) {
+                            mZipCodeList.value = Resource.Error(result.message())
+                        }
                     }
-                } else {
+                } catch (e: IOException) {
                     withContext(Dispatchers.Main) {
-                        mZipCodeList.value = Resource.Error(result.message())
+                        mZipCodeList.value = Resource.Error(e.localizedMessage)
+                    }
+                } catch (e: Exception) {
+                    withContext(Dispatchers.Main) {
+                        mZipCodeList.value = Resource.Error(e.localizedMessage)
                     }
                 }
-                /*zipCodeRepo.getZipCode1(city, state).onEach { result ->
-                    when (result) {
-                        is Resource.Success -> mZipCodeList.postValue(Resource.Success(data = result.data as ZipCodeDTO))
-                        is Resource.Error -> mZipCodeList.postValue(result.message?.let {
-                            Resource.Error(
-                                message = it
-                            )
-                        })
-                        is Resource.Loading -> mZipCodeList.postValue(Resource.Loading())
-                    }
-                }.launchIn(viewModelScope)*/
             }
         }
         return mZipCodeList

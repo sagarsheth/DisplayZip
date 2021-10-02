@@ -4,4 +4,5 @@
     <string name="enter_city">Enter City</string>
     <string name="enter_state">Enter State</string>
     <string name="search_zip_code_by_city_amp_state"><![CDATA[Search zip code by city & state]]></string>
+    <string name="no_results_found">No results found</string>
 </resources>

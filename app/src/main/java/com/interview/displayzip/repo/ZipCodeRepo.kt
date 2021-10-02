@@ -20,27 +20,4 @@ class ZipCodeRepo(private val api: ZipCodeAPI) : IZipCodeRepo {
     override suspend fun getZipCode(city: String, state: String): Response<ZipCodeDTO> {
         return api.getZipCode(city, state)
     }
-
-    /*fun getZipCode1(city: String, state: String): Flow<Resource<ZipCodeDTO>> =
-        flow {
-            //return checkResult(api.getZipCodeListAsync(city, state))
-            try {
-                emit(Resource.Loading())
-                val zip = getZipCode(city, state)
-                emit(Resource.Success(zip))
-            } catch (e: HttpRetryException) {
-                emit(
-                    Resource.Error<ZipCodeDTO>(
-                        e.localizedMessage ?: "An unexpected error occurred"
-                    )
-                )
-            } catch (e: IOException) {
-                emit(
-                    Resource.Error<ZipCodeDTO>(
-                        e.localizedMessage
-                            ?: "Couldn't reach server. Check your internet connection."
-                    )
-                )
-            }
-        }*/
 }
