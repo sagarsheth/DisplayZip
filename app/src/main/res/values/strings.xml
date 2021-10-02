@@ -1,0 +1,7 @@
+<resources>
+    <string name="app_name">DisplayZip</string>
+    <string name="search_zip">Search Zip</string>
+    <string name="enter_city">Enter City</string>
+    <string name="enter_state">Enter State</string>
+    <string name="search_zip_code_by_city_amp_state"><![CDATA[Search zip code by city & state]]></string>
+</resources>
