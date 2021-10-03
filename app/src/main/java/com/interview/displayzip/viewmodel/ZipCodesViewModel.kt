@@ -6,44 +6,47 @@ import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.interview.displayzip.common.Resource
 import com.interview.displayzip.models.ZipCodeDTO
+import com.interview.displayzip.repo.IZipCodeRepo
 import com.interview.displayzip.repo.ZipCodeRepo
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
 import java.io.IOException
 
-class ZipCodesViewModel : ViewModel() {
-    private val zipCodeRepo: ZipCodeRepo = ZipCodeRepo.newInstance()
+/**
+ * ViewModel class get zip data from repository and provide data to UI component
+ */
+class ZipCodesViewModel(private val zipCodeRepo: IZipCodeRepo = ZipCodeRepo.newInstance()) :
+    ViewModel() {
+
     private val mZipCodeList = MutableLiveData<Resource<ZipCodeDTO>>()
 
-
-    fun getZipCode(city: String, state: String): LiveData<Resource<ZipCodeDTO>> {
+    fun getZipCode(city: String, state: String) {
         viewModelScope.launch {
-            mZipCodeList.value = Resource.Loading()
             withContext(Dispatchers.IO) {
                 try {
                     val result = zipCodeRepo.getZipCode(city, state)
                     if (result.isSuccessful && result.body() != null) {
-                        withContext(Dispatchers.Main) {
-                            mZipCodeList.value =
-                                Resource.Success(result.body() ?: ZipCodeDTO(ArrayList()))
-                        }
+                        mZipCodeList.postValue(
+                            Resource.Success(result.body() ?: ZipCodeDTO(emptyList()))
+                        )
                     } else {
-                        withContext(Dispatchers.Main) {
-                            mZipCodeList.value = Resource.Error(result.message())
-                        }
+                        mZipCodeList.postValue(Resource.Success(ZipCodeDTO(emptyList())))
                     }
                 } catch (e: IOException) {
-                    withContext(Dispatchers.Main) {
-                        mZipCodeList.value = Resource.Error(e.localizedMessage)
-                    }
+                    mZipCodeList.postValue(
+                        Resource.Success(ZipCodeDTO(emptyList()))
+                    )
                 } catch (e: Exception) {
-                    withContext(Dispatchers.Main) {
-                        mZipCodeList.value = Resource.Error(e.localizedMessage)
-                    }
+                    mZipCodeList.postValue(
+                        Resource.Success(ZipCodeDTO(emptyList()))
+                    )
                 }
             }
         }
+    }
+
+    fun getZipCodeStatus(): LiveData<Resource<ZipCodeDTO>> {
         return mZipCodeList
     }
 }

@@ -6,6 +6,9 @@ import com.interview.displayzip.models.ZipCodeDTO
 import kotlinx.coroutines.flow.Flow
 import retrofit2.Response
 
+/**
+ * Interface to be implemented by any Zipcode repository (API/DB)
+ */
 interface IZipCodeRepo {
 
     @WorkerThread

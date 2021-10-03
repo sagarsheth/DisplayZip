@@ -7,6 +7,9 @@ import retrofit2.Response
 import retrofit2.Retrofit
 import retrofit2.converter.gson.GsonConverterFactory
 
+/**
+ * API repository which gets ZipCode from API using Retrofit
+ */
 class ZipCodeRepo(private val api: ZipCodeAPI) : IZipCodeRepo {
     companion object {
         fun newInstance(): ZipCodeRepo {

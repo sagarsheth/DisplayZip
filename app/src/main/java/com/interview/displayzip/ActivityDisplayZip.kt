@@ -16,6 +16,9 @@ import com.interview.displayzip.databinding.ActivityDisplayzipBinding
 import com.interview.displayzip.ui.ZipCodeAdapter
 import com.interview.displayzip.viewmodel.ZipCodesViewModel
 
+/**
+ * Main UI activity class which interacts with view model to get Zip Codes
+ */
 class ActivityDisplayZip : AppCompatActivity() {
     private lateinit var mZipCodeViewModel: ZipCodesViewModel
     private lateinit var mZipCodeListRecycleView: RecyclerView
@@ -35,6 +38,7 @@ class ActivityDisplayZip : AppCompatActivity() {
         mSearchButton = binding.searchButton
         mEmptyView = binding.emptyView
 
+        // Display Zip code in Grid layout of 3
         GridLayoutManager(
             this, // context
             3, // span count
@@ -48,43 +52,46 @@ class ActivityDisplayZip : AppCompatActivity() {
         mSearchButton.setOnClickListener(View.OnClickListener {
             val city = binding.cityEditText.text
             val state = binding.stateEditText.text
-            if (city?.isEmpty() == true || state?.isEmpty() == true) {
+            if (isCityStateEntered(city.toString(), state.toString())) {
                 Toast.makeText(applicationContext, "Enter city and state", Toast.LENGTH_LONG).show()
             } else {
-                mEmptyView.visibility = View.GONE
-                getZipCode(city.toString(), state.toString())
+                getZipCode(city.toString().trim(), state.toString().trim())
+                mSearchButton.hideKeyboard()
             }
         })
     }
 
     private fun getZipCode(city: String, state: String) {
-        mZipCodeViewModel.getZipCode(city, state).observe(this, {
+        mZipCodeViewModel.getZipCodeStatus().observe(this, {
             when (it) {
                 is Resource.Success -> {
                     if (it.data == null || it.data.zip_codes.isEmpty()) {
                         mEmptyView.visibility = View.VISIBLE
+                        mZipCodeListRecycleView.adapter = null
+                    } else {
+                        mEmptyView.visibility = View.GONE
+                        // set recycle view adapter
+                        mZipCodeListRecycleView.adapter =
+                            it.data?.let { it1 -> ZipCodeAdapter(it1.zip_codes) }
                     }
-                    // set recycle view adapter
-                    mZipCodeListRecycleView.adapter =
-                        it.data?.let { it1 -> ZipCodeAdapter(it1.zip_codes) }
-                    mSearchButton.hideKeyboard()
                 }
                 is Resource.Error -> {
                     // set recycle view adapter
                     Toast.makeText(applicationContext, it.message, Toast.LENGTH_LONG).show()
                     mEmptyView.visibility = View.VISIBLE
-                }
-                is Resource.Loading -> {
-                    // set recycle view adapter
-                    Toast.makeText(applicationContext, "Loading Please wait...", Toast.LENGTH_SHORT)
-                        .show()
+                    mZipCodeListRecycleView.adapter = null
                 }
             }
         })
+        mZipCodeViewModel.getZipCode(city, state)
     }
 
     private fun View.hideKeyboard() {
         val imm = context.getSystemService(Context.INPUT_METHOD_SERVICE) as InputMethodManager
         imm.hideSoftInputFromWindow(windowToken, 0)
+    }
+
+    private fun isCityStateEntered(city: String, state: String): Boolean {
+        return (city.isEmpty() || state.isEmpty())
     }
 }
